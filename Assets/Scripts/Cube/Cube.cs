@@ -1,0 +1,79 @@
+using System.Collections;
+using UnityEngine;
+
+public class Cube : MonoBehaviour
+{
+    [SerializeField] private CubePool _pool;
+
+    private CubeColor _cubeColor;
+    private Coroutine _lifeTimer;
+    private bool _hasCollided = false;
+
+    private void Awake()
+    {
+        _cubeColor = GetComponent<CubeColor>();
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (_hasCollided) return;
+
+        if (collision.gameObject.GetComponent<Platform>() != null)
+        {
+            _hasCollided = true;
+
+            if (_cubeColor != null)
+            {
+                _cubeColor.ChangeColor();
+            }
+
+            StartLifeTimer();
+        }
+    }
+
+    public void SetPool(CubePool pool)
+    {
+        _pool = pool;
+    }
+
+    public void ResetState()
+    {
+        _hasCollided = false;
+
+        if (_lifeTimer != null)
+        {
+            StopCoroutine(_lifeTimer);
+            _lifeTimer = null;
+        }
+
+        _cubeColor.ResetColor();
+    }
+
+    private void StartLifeTimer()
+    {
+        if (_lifeTimer != null)
+        {
+            StopCoroutine(_lifeTimer);
+        }
+
+        _lifeTimer = StartCoroutine(LifeTimerCoroutine());
+    }
+
+    private IEnumerator LifeTimerCoroutine()
+    {
+        float minRandomValue = 2f;
+        float maxRandomValue = 5f;
+        
+        float waitTime = Random.Range(minRandomValue, maxRandomValue);
+        yield return new WaitForSeconds(waitTime);
+
+        if (_pool != null)
+        {
+            _pool.ReturnCube(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
