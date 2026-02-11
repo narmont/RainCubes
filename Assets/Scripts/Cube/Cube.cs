@@ -1,13 +1,15 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Cube : MonoBehaviour
 {
-    [SerializeField] private CubePool _pool;
-
     private CubeColor _cubeColor;
     private Coroutine _lifeTimer;
     private bool _hasCollided = false;
+    
+    public event Action<Cube> OnReturnToPoolRequested;
 
     private void Awake()
     {
@@ -31,11 +33,6 @@ public class Cube : MonoBehaviour
         }
     }
 
-    public void SetPool(CubePool pool)
-    {
-        _pool = pool;
-    }
-
     public void ResetState()
     {
         _hasCollided = false;
@@ -56,24 +53,20 @@ public class Cube : MonoBehaviour
             StopCoroutine(_lifeTimer);
         }
 
-        _lifeTimer = StartCoroutine(LifeTimerCoroutine());
+        _lifeTimer = StartCoroutine(RunLifeTimer());
     }
 
-    private IEnumerator LifeTimerCoroutine()
+    private IEnumerator RunLifeTimer()
     {
         float minRandomValue = 2f;
-        float maxRandomValue = 5f;
-        
+        float maxRandomValue = 5f;       
         float waitTime = Random.Range(minRandomValue, maxRandomValue);
         yield return new WaitForSeconds(waitTime);
+        RequestReturnToPool();
+    }
 
-        if (_pool != null)
-        {
-            _pool.ReturnCube(this);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+    private void RequestReturnToPool()
+    {
+        OnReturnToPoolRequested?.Invoke(this);
     }
 }

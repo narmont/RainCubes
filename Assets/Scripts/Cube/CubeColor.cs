@@ -3,14 +3,17 @@ using UnityEngine;
 [RequireComponent(typeof(Renderer))]
 public class CubeColor : MonoBehaviour
 {
+    private Renderer _renderer;
+
     private void Awake()
     {
+        _renderer = GetComponent<Renderer>();
         SetInitialColor();
     }
 
     public void ChangeColor()
     {
-        GetComponent<Renderer>().material.color = Random.ColorHSV(0f,1f,1f,1f,0.5f, 1f);
+        _renderer.material.color = Random.ColorHSV(0f,1f,1f,1f,0.5f, 1f);
     }
 
     public void ResetColor()
@@ -20,6 +23,6 @@ public class CubeColor : MonoBehaviour
 
     private void SetInitialColor()
     {
-        GetComponent <Renderer>().material.color = Color.black;
+        _renderer.material.color = Color.black;
     }
 }
