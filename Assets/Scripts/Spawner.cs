@@ -29,8 +29,8 @@ public class Spawner : MonoBehaviour
     {
         _pool = new ObjectPool<Cube>(
             createFunc: CreateCube,
-            actionOnGet: OnGetCube,
-            actionOnRelease: OnReleaseCube,
+            actionOnGet: PrepareCube,
+            actionOnRelease: DisableCube,
             actionOnDestroy: DestroyCube,
             collectionCheck: true,
             defaultCapacity: _poolCapacity,
@@ -47,35 +47,35 @@ public class Spawner : MonoBehaviour
     private Cube CreateCube()
     {
         Cube cube = Instantiate(_prefabCube);
-        cube.OnReturnToPoolRequested += HandleReturnToPool;
+        cube.LifeEnded += HandleLifeEnded;
         return cube;
     }
 
-    private void OnGetCube(Cube cube)
+    private void PrepareCube(Cube cube)
     {
         cube.gameObject.SetActive(true);
         cube.ResetState();
     }
 
-    private void OnReleaseCube(Cube cube)
+    private void DisableCube(Cube cube)
     {
         cube.gameObject.SetActive(false);
     }
 
     private void DestroyCube(Cube cube)
     {
-        cube.OnReturnToPoolRequested -= HandleReturnToPool;
+        cube.LifeEnded -= HandleLifeEnded;
         Destroy(cube.gameObject);
     }
 
-    private void HandleReturnToPool(Cube cube)
+    private void HandleLifeEnded(Cube cube)
     {
         _pool.Release(cube);
     }
 
     private IEnumerator SpawnCubeRoutine()
     {
-        while (true)
+        while (enabled)
         {
             yield return _spawnWait;
             SpawnCube();
@@ -95,11 +95,11 @@ public class Spawner : MonoBehaviour
     private Vector3 GetRandomPosition()
     {
         Vector3 position = _platform.transform.position;
-        Vector3 size = _platform.transform.localScale;
+        Vector3 halfScale = _platform.transform.localScale * 0.5f;
 
-        float randomX = Random.Range(position.x - size.x / 2, position.x + size.x / 2);
+        float randomX = Random.Range(position.x - halfScale.x, position.x + halfScale.x);
         float spawnY = position.y + _spawnHeight;
-        float randomZ = Random.Range(position.z - size.z / 2, position.z + size.z / 2);
+        float randomZ = Random.Range(position.z - halfScale.z, position.z + halfScale.z);
 
         return new Vector3 (randomX, spawnY, randomZ);
     }

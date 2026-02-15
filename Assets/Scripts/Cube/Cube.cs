@@ -9,7 +9,7 @@ public class Cube : MonoBehaviour
     private Coroutine _lifeTimer;
     private bool _hasCollided = false;
     
-    public event Action<Cube> OnReturnToPoolRequested;
+    public event Action<Cube> LifeEnded;
 
     private void Awake()
     {
@@ -18,9 +18,10 @@ public class Cube : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (_hasCollided) return;
+        if (_hasCollided) 
+            return;
 
-        if (collision.gameObject.GetComponent<Platform>() != null)
+        if (collision.gameObject.TryGetComponent<Platform>(out _))
         {
             _hasCollided = true;
 
@@ -62,11 +63,11 @@ public class Cube : MonoBehaviour
         float maxRandomValue = 5f;       
         float waitTime = Random.Range(minRandomValue, maxRandomValue);
         yield return new WaitForSeconds(waitTime);
-        RequestReturnToPool();
+        EndLife();
     }
 
-    private void RequestReturnToPool()
+    private void EndLife()
     {
-        OnReturnToPoolRequested?.Invoke(this);
+        LifeEnded?.Invoke(this);
     }
 }
